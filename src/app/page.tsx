@@ -17,7 +17,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             <Show when="signed-out">
-              <SignInButton mode="modal" asChild>
+              <SignInButton mode="modal">
                 <Button variant="outline">Entrar</Button>
               </SignInButton>
             </Show>
@@ -37,7 +37,7 @@ export default function Home() {
             <p className="text-muted-foreground max-w-md">
               Faça login para gerenciar suas tarefas com alta produtividade, sincronização em nuvem e métricas avançadas.
             </p>
-            <SignInButton mode="modal" asChild>
+            <SignInButton mode="modal">
               <Button size="lg">Começar Agora</Button>
             </SignInButton>
           </div>
