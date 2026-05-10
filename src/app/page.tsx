@@ -23,7 +23,7 @@ export default function Home() {
             </Show>
             <Show when="signed-in">
               <AnalyticsDashboard />
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             </Show>
             <ModeToggle />
           </div>
