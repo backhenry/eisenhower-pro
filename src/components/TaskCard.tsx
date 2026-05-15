@@ -2,9 +2,11 @@ import { Task } from "@/types";
 import { useDraggable } from "@dnd-kit/core";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { Check, Edit, Trash2, GripVertical, AlertCircle, Play } from "lucide-react";
+import { Check, Edit, Trash2, GripVertical, AlertCircle, Play, Calendar, AlignLeft, ListChecks, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { format, isPast, isToday } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface TaskCardProps {
   task: Task;
@@ -62,6 +64,31 @@ export function TaskCard({ task, onToggleComplete, onDelete, onEdit, onFocus }: 
           )}>
             {task.title}
           </p>
+          
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            {task.dueDate && (
+              <span className={cn(
+                "text-[10px] flex items-center gap-1",
+                !task.isCompleted && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate))
+                  ? "text-red-500 font-semibold"
+                  : "text-muted-foreground"
+              )}>
+                <Calendar size={10} />
+                {format(new Date(task.dueDate), "dd MMM, HH:mm", { locale: ptBR })}
+              </span>
+            )}
+            {task.description && (
+              <span className="text-muted-foreground" title="Possui descrição">
+                <AlignLeft size={10} />
+              </span>
+            )}
+            {task.subtasks && task.subtasks.length > 0 && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <ListChecks size={10} />
+                {task.subtasks.filter(st => st.isCompleted).length}/{task.subtasks.length}
+              </span>
+            )}
+          </div>
           {isStagnant && (
             <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
               <AlertCircle size={10} /> Parada há muito tempo
@@ -70,6 +97,20 @@ export function TaskCard({ task, onToggleComplete, onDelete, onEdit, onFocus }: 
         </div>
 
         <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+          {task.quadrantId === 'q3' && !task.isCompleted && (
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-amber-500 hover:text-amber-600" onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Por favor, assuma esta tarefa',
+                  text: `Você pode me ajudar com esta tarefa?\n\nTarefa: ${task.title}\n${task.description || ''}`,
+                }).catch(console.error);
+              } else {
+                window.open(`mailto:?subject=Tarefa delegada: ${task.title}&body=Você pode me ajudar com a tarefa: ${task.title}?`);
+              }
+            }}>
+              <Share2 size={14} />
+            </Button>
+          )}
           {task.quadrantId === 'q2' && !task.isCompleted && onFocus && (
             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:text-primary" onClick={() => onFocus(task)}>
               <Play size={14} />

@@ -9,15 +9,44 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const id = (await params).id;
   const body = await req.json();
   
-  if (body.isCompleted === true) {
-    body.completedAt = new Date();
-  } else if (body.isCompleted === false) {
-    body.completedAt = null;
+  // Verify ownership
+  const existingTask = await prisma.task.findUnique({
+    where: { id }
+  });
+  if (!existingTask || existingTask.userId !== userId) {
+    return NextResponse.json({ error: 'Not Found or Unauthorized' }, { status: 404 });
   }
 
-  const task = await prisma.task.updateMany({
-    where: { id, userId },
-    data: body
+  const { subtasks, dueDate, ...restBody } = body;
+
+  if (restBody.isCompleted === true) {
+    restBody.completedAt = new Date();
+  } else if (restBody.isCompleted === false) {
+    restBody.completedAt = null;
+  }
+
+  const updateData: any = {
+    ...restBody,
+  };
+
+  if (dueDate !== undefined) {
+    updateData.dueDate = dueDate ? new Date(dueDate) : null;
+  }
+
+  if (subtasks) {
+    updateData.subtasks = {
+      deleteMany: {}, // Clean up existing subtasks and recreate
+      create: subtasks.map((st: any) => ({
+        title: st.title,
+        isCompleted: st.isCompleted || false
+      }))
+    };
+  }
+
+  const task = await prisma.task.update({
+    where: { id },
+    data: updateData,
+    include: { subtasks: true }
   });
 
   return NextResponse.json(task);

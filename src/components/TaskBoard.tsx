@@ -10,6 +10,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import confetti from "canvas-confetti";
 import { FocusTimer } from "./FocusTimer";
 import { Button } from "./ui/button";
+import { playPopSound, playSuccessSound } from "@/lib/sounds";
 
 const QUADRANTS = [
   { id: 'q1', title: 'Faça Agora', description: 'Urgente & Importante', colorClass: 'bg-red-500/10 border-red-500/20 text-red-950 dark:text-red-100' },
@@ -54,22 +55,18 @@ export function TaskBoard() {
     return 'q4';
   };
 
-  const handleSaveTask = (title: string, isUrgent: boolean, isImportant: boolean) => {
+  const handleSaveTask = (data: Partial<Task>) => {
     if (editingTask) {
       updateTask.mutate({ 
+        ...data,
         id: editingTask.id, 
-        title, 
-        isUrgent, 
-        isImportant, 
-        quadrantId: getQuadrantId(isUrgent, isImportant) 
+        quadrantId: getQuadrantId(data.isUrgent!, data.isImportant!) 
       });
       setEditingTask(null);
     } else {
       addTask.mutate({ 
-        title, 
-        isUrgent, 
-        isImportant, 
-        quadrantId: getQuadrantId(isUrgent, isImportant),
+        ...data,
+        quadrantId: getQuadrantId(data.isUrgent!, data.isImportant!),
         isCompleted: false
       });
       setIsFormOpen(false);
@@ -86,7 +83,12 @@ export function TaskBoard() {
       const uncompletedQ1 = q1Tasks.filter(t => !t.isCompleted && t.id !== id);
       if (uncompletedQ1.length === 0) {
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        playSuccessSound();
+      } else {
+        playPopSound();
       }
+    } else if (!current) {
+      playPopSound();
     }
     
     updateTask.mutate({ id, isCompleted: !current });
@@ -101,6 +103,7 @@ export function TaskBoard() {
     const task = tasks.find(t => t.id === taskId);
 
     if (task && task.quadrantId !== newQuadrantId) {
+      playPopSound();
       const isUrgent = newQuadrantId === 'q1' || newQuadrantId === 'q3';
       const isImportant = newQuadrantId === 'q1' || newQuadrantId === 'q2';
       updateTask.mutate({ id: taskId, quadrantId: newQuadrantId, isUrgent, isImportant });

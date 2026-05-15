@@ -9,14 +9,31 @@ datasource db {
 model Task {
   id          String    @id @default(uuid())
   title       String
+  description String?
   isUrgent    Boolean
   isImportant Boolean
   isCompleted Boolean   @default(false)
   quadrantId  String
   userId      String
+  dueDate     DateTime?
+  timeSpent   Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   completedAt DateTime?
 
+  subtasks    Subtask[]
+
   @@index([userId])
+}
+
+model Subtask {
+  id          String   @id @default(uuid())
+  title       String
+  isCompleted Boolean  @default(false)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([taskId])
 }

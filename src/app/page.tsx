@@ -1,5 +1,6 @@
 import { TaskBoard } from "@/components/TaskBoard";
 import { ModeToggle } from "@/components/ModeToggle";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { SignInButton, Show, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
@@ -23,6 +24,7 @@ export default function Home() {
             </Show>
             <Show when="signed-in">
               <AnalyticsDashboard />
+              <ThemeSelector />
               <UserButton />
             </Show>
             <ModeToggle />
