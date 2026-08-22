@@ -60,4 +60,3 @@ function PopoverContent({
 }
 
 export { Popover, PopoverTrigger, PopoverContent }
-  </PopoverPrimitive.Trigger>
